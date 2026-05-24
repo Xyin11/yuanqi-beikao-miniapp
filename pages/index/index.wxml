@@ -1,0 +1,336 @@
+<view class="page-shell page-fade">
+  <view class="top-nav">
+    <view class="top-nav__brand">
+      <text class="top-nav__title">元气备考小站</text>
+      <text class="top-nav__subtitle">学习打卡、喝水补给、心情安顿都在这里</text>
+    </view>
+    <view class="top-nav__links">
+      <view class="nav-chip nav-chip--active">学习台</view>
+      <view class="nav-chip" data-url="/pages/water/water" bindtap="switchPage">喝水页</view>
+      <view class="nav-chip" data-url="/pages/mood/mood" bindtap="switchPage">树洞页</view>
+    </view>
+  </view>
+
+  <view class="hero card">
+    <view class="hero__content">
+      <text class="hero__title">把复习拆成一次次踏实打卡</text>
+      <text class="hero__desc">支持历史日期补录、项目自定义、本地统计联动，专注记录真正有用的内容。</text>
+    </view>
+    <view class="hero__actions">
+      <view class="primary-btn hero__btn" bindtap="openQuickRecord">立即打卡</view>
+      <view class="secondary-btn hero__btn" bindtap="goToToday">回到今天</view>
+    </view>
+  </view>
+
+  <view class="tag workspace-tag">左右滑动查看四栏工作台</view>
+
+  <scroll-view class="workspace-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+    <view class="workspace-row">
+      <view class="workspace-panel card">
+        <view class="panel-head">
+          <text class="section-title">月历打卡</text>
+          <text class="section-subtitle">未来日期已锁定，仅支持今天和历史记录</text>
+        </view>
+
+        <view class="month-toolbar">
+          <view class="ghost-btn month-toolbar__btn" bindtap="goPrevMonth">上一月</view>
+          <text class="month-toolbar__label">{{monthLabel}}</text>
+          <view class="ghost-btn month-toolbar__btn" bindtap="goNextMonth">下一月</view>
+        </view>
+
+        <view class="month-toolbar month-toolbar--compact">
+          <view class="secondary-btn month-toolbar__today" bindtap="goToToday">快速返回当月</view>
+          <view class="tag">选中日期：{{selectedDate}}</view>
+        </view>
+
+        <view class="weekday-row">
+          <text class="weekday-cell" wx:for="{{weekLabels}}" wx:key="*this">{{item}}</text>
+        </view>
+
+        <view class="calendar-grid">
+          <view
+            class="calendar-cell {{item.isCurrentMonth ? '' : 'calendar-cell--muted'}} {{item.isSelected ? 'calendar-cell--selected' : ''}} {{item.isFuture ? 'calendar-cell--disabled' : ''}}"
+            wx:for="{{calendarDays}}"
+            wx:key="key"
+            data-date="{{item.fullDate}}"
+            data-future="{{item.isFuture}}"
+            bindtap="handleDayTap"
+          >
+            <view class="calendar-cell__top">
+              <text class="calendar-cell__day">{{item.dayNumber}}</text>
+              <text wx:if="{{item.isToday}}" class="calendar-cell__today">今</text>
+            </view>
+
+            <view class="calendar-cell__tags" wx:if="{{item.tags.length}}">
+              <text class="calendar-record" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+              <text wx:if="{{item.moreCount}}" class="calendar-record calendar-record--more">+{{item.moreCount}}</text>
+            </view>
+
+            <text wx:if="{{item.totalDuration}}" class="calendar-cell__duration">{{item.totalDuration}} 分钟</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="workspace-panel card">
+        <view class="panel-head">
+          <text class="section-title">打卡操作区</text>
+          <text class="section-subtitle">点击日期可弹出打卡面板，项目支持新增、编辑、删除</text>
+        </view>
+
+        <view class="date-summary">
+          <view class="date-summary__meta">
+            <text class="date-summary__label">当前选中日期</text>
+            <text class="date-summary__date">{{selectedDate}}</text>
+          </view>
+          <view class="date-summary__actions">
+            <view class="primary-btn date-summary__btn" bindtap="openQuickRecord">新增打卡</view>
+            <view class="secondary-btn date-summary__btn" bindtap="openProjectModal">管理项目</view>
+          </view>
+        </view>
+
+        <view class="record-list">
+          <view class="list-row record-item" wx:for="{{selectedRecords}}" wx:key="id">
+            <view class="list-meta">
+              <text class="list-title">{{item.projectName}}</text>
+              <text class="list-desc">学习 {{item.duration}} 分钟 · 记录于 {{item.clockText}}</text>
+            </view>
+            <view class="mini-actions">
+              <view class="mini-btn" data-id="{{item.id}}" bindtap="editRecord">编辑</view>
+              <view class="mini-btn mini-btn--danger" data-id="{{item.id}}" bindtap="deleteRecord">删除</view>
+            </view>
+          </view>
+
+          <view wx:if="{{!selectedRecords.length}}" class="empty-state">
+            今天还没有记录，点一个日期开始打卡吧。
+          </view>
+        </view>
+
+        <view class="inline-divider"></view>
+
+        <view class="subsection-head">
+          <text class="section-title section-title--small">项目速览</text>
+          <text class="section-subtitle">项目名称会同步到历史打卡统计中</text>
+        </view>
+
+        <view class="project-list">
+          <view class="list-row project-item" wx:for="{{projects}}" wx:key="id">
+            <view class="list-meta">
+              <text class="list-title">{{item.name}}</text>
+              <text class="list-desc">可用于任意考研、考公学习科目</text>
+            </view>
+            <view class="mini-actions">
+              <view class="mini-btn" data-id="{{item.id}}" bindtap="startProjectEdit">编辑</view>
+              <view class="mini-btn mini-btn--danger" data-id="{{item.id}}" bindtap="deleteProject">删除</view>
+            </view>
+          </view>
+
+          <view wx:if="{{!projects.length}}" class="empty-state">
+            还没有学习项目，先添加一个再开始记录。
+          </view>
+        </view>
+      </view>
+
+      <view class="workspace-panel card">
+        <view class="panel-head">
+          <text class="section-title">当日时长统计</text>
+          <text class="section-subtitle">按全天 1440 分钟为基数，自动计算时间利用率</text>
+        </view>
+
+        <view class="chart-block">
+          <view class="chart-shell">
+            <canvas
+              canvas-id="usageCanvas"
+              class="usage-canvas"
+              style="width: {{canvasSize}}px; height: {{canvasSize}}px;"
+              width="{{canvasSize}}"
+              height="{{canvasSize}}"
+            ></canvas>
+            <view class="chart-center">
+              <text class="chart-center__value">{{dailyUsageText}}</text>
+              <text class="chart-center__label">时间利用率</text>
+            </view>
+          </view>
+
+          <view class="chart-meta">
+            <text class="chart-meta__title">{{selectedDate}} 总学习时长</text>
+            <text class="chart-meta__value">{{dailyTotalDuration}} 分钟</text>
+            <text class="chart-meta__tip">若总时长超过 1440 分钟，图表会按 100% 顶格展示。</text>
+          </view>
+        </view>
+
+        <view class="detail-list">
+          <view class="detail-item" wx:for="{{dailyProjectStats}}" wx:key="name">
+            <view class="list-row">
+              <text class="list-title">{{item.name}}</text>
+              <text class="list-desc">{{item.duration}} 分钟</text>
+            </view>
+            <view class="bar-track">
+              <view class="bar-fill" style="width: {{item.barWidth}}%;"></view>
+            </view>
+          </view>
+
+          <view wx:if="{{!dailyProjectStats.length}}" class="empty-state">
+            当前日期还没有可统计的项目时长。
+          </view>
+        </view>
+      </view>
+
+      <view class="workspace-panel card">
+        <view class="panel-head">
+          <text class="section-title">项目累计统计</text>
+          <text class="section-subtitle">自定义开始日期和结束日期，实时联动项目总时长</text>
+        </view>
+
+        <view class="range-picker-row">
+          <view class="range-field">
+            <text class="field-label">开始日期</text>
+            <picker mode="date" value="{{rangeStartDate}}" end="{{today}}" bindchange="handleRangeStartChange">
+              <view class="picker-field">{{rangeStartDate}}</view>
+            </picker>
+          </view>
+          <view class="range-field">
+            <text class="field-label">结束日期</text>
+            <picker mode="date" value="{{rangeEndDate}}" end="{{today}}" bindchange="handleRangeEndChange">
+              <view class="picker-field">{{rangeEndDate}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view class="range-shortcuts">
+          <view class="secondary-btn range-shortcuts__btn" bindtap="useThisMonthRange">本月累计</view>
+          <view class="secondary-btn range-shortcuts__btn" bindtap="useLastSevenDaysRange">最近 7 天</view>
+        </view>
+
+        <view class="range-summary">
+          <text class="range-summary__label">{{rangeLabel}}</text>
+          <text class="range-summary__value">累计 {{rangeTotalDuration}} 分钟</text>
+        </view>
+
+        <view class="detail-list">
+          <view class="detail-item" wx:for="{{rangeProjectStats}}" wx:key="name">
+            <view class="list-row">
+              <text class="list-title">{{item.name}}</text>
+              <text class="list-desc">{{item.duration}} 分钟</text>
+            </view>
+            <view class="bar-track">
+              <view class="bar-fill" style="width: {{item.barWidth}}%;"></view>
+            </view>
+          </view>
+
+          <view wx:if="{{!rangeProjectStats.length}}" class="empty-state">
+            当前区间暂无学习数据，换个时间范围看看吧。
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{isPunchModalVisible}}" class="modal-mask {{modalActive ? 'modal-mask--active' : ''}}" bindtap="closePunchModal">
+    <view class="modal-panel {{modalActive ? 'modal-panel--active' : ''}}" catchtap="noop">
+      <view class="modal-header">
+        <view>
+          <text class="section-title">打卡弹窗</text>
+          <text class="section-subtitle">当前日期：{{selectedDate}}</text>
+        </view>
+        <view class="ghost-btn modal-close" bindtap="closePunchModal">关闭</view>
+      </view>
+
+      <view class="modal-tabs">
+        <view class="modal-tab {{modalTab === 'record' ? 'modal-tab--active' : ''}}" data-tab="record" bindtap="switchModalTab">学习打卡</view>
+        <view class="modal-tab {{modalTab === 'project' ? 'modal-tab--active' : ''}}" data-tab="project" bindtap="switchModalTab">项目管理</view>
+      </view>
+
+      <view wx:if="{{modalTab === 'record'}}" class="modal-body">
+        <view wx:if="{{projects.length}}">
+          <view class="field-block">
+            <text class="field-label">选择项目</text>
+            <picker mode="selector" range="{{projectNames}}" value="{{selectedProjectIndex}}" bindchange="handleProjectPickerChange">
+              <view class="picker-field">{{selectedProjectName || '请选择项目'}}</view>
+            </picker>
+          </view>
+
+          <view class="field-block">
+            <text class="field-label">学习时长（分钟）</text>
+            <input
+              class="text-input"
+              type="number"
+              placeholder="请输入任意正整数分钟数"
+              value="{{durationInput}}"
+              bindinput="handleDurationInput"
+            />
+          </view>
+
+          <view class="modal-actions">
+            <view class="secondary-btn modal-actions__btn" bindtap="closePunchModal">取消</view>
+            <view class="primary-btn modal-actions__btn" bindtap="saveRecord">{{editingRecordId ? '保存修改' : '确认打卡'}}</view>
+          </view>
+
+          <view class="inline-divider"></view>
+
+          <view class="subsection-head">
+            <text class="section-title section-title--small">当日记录预览</text>
+            <text class="section-subtitle">可直接在这里编辑或删除</text>
+          </view>
+
+          <view class="record-list">
+            <view class="list-row record-item" wx:for="{{selectedRecords}}" wx:key="id">
+              <view class="list-meta">
+                <text class="list-title">{{item.projectName}}</text>
+                <text class="list-desc">{{item.duration}} 分钟 · {{item.clockText}}</text>
+              </view>
+              <view class="mini-actions">
+                <view class="mini-btn" data-id="{{item.id}}" bindtap="editRecord">编辑</view>
+                <view class="mini-btn mini-btn--danger" data-id="{{item.id}}" bindtap="deleteRecord">删除</view>
+              </view>
+            </view>
+
+            <view wx:if="{{!selectedRecords.length}}" class="empty-state">
+              当前日期还没有打卡内容。
+            </view>
+          </view>
+        </view>
+
+        <view wx:else class="empty-state empty-state--modal">
+          暂无学习项目，先切到“项目管理”里新增科目吧。
+        </view>
+      </view>
+
+      <view wx:if="{{modalTab === 'project'}}" class="modal-body">
+        <view class="field-block">
+          <text class="field-label">项目名称</text>
+          <input
+            class="text-input"
+            maxlength="20"
+            placeholder="例如：申论、行测、专业课"
+            value="{{modalProjectName}}"
+            bindinput="handleProjectNameInput"
+          />
+        </view>
+
+        <view class="modal-actions">
+          <view class="secondary-btn modal-actions__btn" bindtap="closePunchModal">暂不处理</view>
+          <view class="primary-btn modal-actions__btn" bindtap="submitProjectForm">{{editingProjectId ? '保存项目' : '新增项目'}}</view>
+        </view>
+
+        <view class="inline-divider"></view>
+
+        <view class="project-list">
+          <view class="list-row project-item" wx:for="{{projects}}" wx:key="id">
+            <view class="list-meta">
+              <text class="list-title">{{item.name}}</text>
+              <text class="list-desc">支持在首页统计中自动汇总时长</text>
+            </view>
+            <view class="mini-actions">
+              <view class="mini-btn" data-id="{{item.id}}" bindtap="startProjectEdit">编辑</view>
+              <view class="mini-btn mini-btn--danger" data-id="{{item.id}}" bindtap="deleteProject">删除</view>
+            </view>
+          </view>
+
+          <view wx:if="{{!projects.length}}" class="empty-state">
+            还没有项目，新增后就能开始打卡。
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

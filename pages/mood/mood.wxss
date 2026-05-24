@@ -1,0 +1,38 @@
+.quote-card,
+.encourage-card,
+.treehole,
+.notes {
+  padding: 30rpx;
+  margin-bottom: 22rpx;
+}
+
+.quote-card__text,
+.encourage-card__text {
+  display: block;
+  font-size: 34rpx;
+  line-height: 1.8;
+  color: #234032;
+}
+
+.quote-card__btn {
+  margin-top: 24rpx;
+}
+
+.treehole__btn {
+  margin-top: 24rpx;
+}
+
+.note-item + .note-item {
+  margin-top: 18rpx;
+}
+
+.note-item {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #f9fbf9;
+}
+
+.note-item__content {
+  line-height: 1.8;
+  white-space: pre-wrap;
+}

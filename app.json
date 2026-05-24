@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/water/water",
+    "pages/mood/mood"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#eef6ef",
+    "navigationBarTitleText": "元气备考小站",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f4f8f4"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

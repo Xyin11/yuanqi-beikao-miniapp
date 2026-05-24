@@ -1,0 +1,72 @@
+<view class="page-shell page-fade">
+  <view class="top-nav">
+    <view class="top-nav__brand">
+      <text class="top-nav__title">心情树洞页</text>
+      <text class="top-nav__subtitle">允许自己累，也允许自己慢慢恢复元气</text>
+    </view>
+    <view class="top-nav__links">
+      <view class="nav-chip" data-url="/pages/index/index" bindtap="switchPage">学习台</view>
+      <view class="nav-chip" data-url="/pages/water/water" bindtap="switchPage">喝水页</view>
+      <view class="nav-chip nav-chip--active">树洞页</view>
+    </view>
+  </view>
+
+  <view class="quote-card card">
+    <view class="panel-head">
+      <text class="section-title">今日暖心文案</text>
+      <text class="section-subtitle">为备考中的紧绷感留一点缓冲</text>
+    </view>
+
+    <text class="quote-card__text">{{currentQuote}}</text>
+    <view class="secondary-btn quote-card__btn" bindtap="refreshQuote">换一句鼓励</view>
+  </view>
+
+  <view class="encourage-card card" wx:if="{{lastEncouragement}}">
+    <view class="panel-head">
+      <text class="section-title">学习结束鼓励</text>
+      <text class="section-subtitle">{{lastEncouragement.date}} 自动推送记录</text>
+    </view>
+
+    <text class="encourage-card__text">{{lastEncouragement.text}}</text>
+  </view>
+
+  <view class="treehole card">
+    <view class="panel-head">
+      <text class="section-title">私密情绪树洞</text>
+      <text class="section-subtitle">只保存在当前设备本地缓存，不上传服务器</text>
+    </view>
+
+    <textarea
+      class="text-area"
+      maxlength="500"
+      placeholder="可以写下今天的压力、感悟、卡住的点，或者一句想对自己说的话。"
+      value="{{noteInput}}"
+      bindinput="handleNoteInput"
+    ></textarea>
+
+    <view class="primary-btn treehole__btn" bindtap="saveMoodNote">保存到树洞</view>
+  </view>
+
+  <view class="notes card">
+    <view class="panel-head">
+      <text class="section-title">最近树洞记录</text>
+      <text class="section-subtitle">需要时回看，会发现自己已经走了很远</text>
+    </view>
+
+    <view class="note-item" wx:for="{{moodNotes}}" wx:key="id">
+      <view class="list-row">
+        <view class="list-meta">
+          <text class="list-title">{{item.date}} · {{item.clockText}}</text>
+          <text class="list-desc note-item__content">{{item.content}}</text>
+        </view>
+        <view class="mini-actions">
+          <view class="mini-btn mini-btn--danger" data-id="{{item.id}}" bindtap="deleteMoodNote">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{!moodNotes.length}}" class="empty-state">
+      还没有树洞内容，想说的话都可以先放在这里。
+    </view>
+  </view>
+</view>

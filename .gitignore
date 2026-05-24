@@ -1,0 +1,13 @@
+# WeChat DevTools private config
+project.private.config.json
+project.private.config.*.json
+
+# Local extracted or temporary files
+resume_extracted.txt
+*.log
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

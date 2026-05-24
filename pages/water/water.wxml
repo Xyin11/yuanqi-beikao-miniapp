@@ -1,0 +1,155 @@
+<view class="page-shell page-fade">
+  <view class="top-nav">
+    <view class="top-nav__brand">
+      <text class="top-nav__title">喝水提醒页</text>
+      <text class="top-nav__subtitle">补足水分，脑子和状态都会更稳定</text>
+    </view>
+    <view class="top-nav__links">
+      <view class="nav-chip" data-url="/pages/index/index" bindtap="switchPage">学习台</view>
+      <view class="nav-chip nav-chip--active">喝水页</view>
+      <view class="nav-chip" data-url="/pages/mood/mood" bindtap="switchPage">树洞页</view>
+    </view>
+  </view>
+
+  <view class="intro card">
+    <text class="intro__title">饮水节奏也会影响复习手感</text>
+    <text class="intro__desc">支持快捷记一杯、手动补录、目标和提醒时间自定义。提醒为本地前台提醒，小程序保持运行时生效。</text>
+  </view>
+
+  <view class="overview card">
+    <view class="overview__head">
+      <view>
+        <text class="section-title">今日补水进度</text>
+        <text class="section-subtitle">{{today}} · 目标 {{targetInput}} ml</text>
+      </view>
+      <view class="tag">当前进度 {{progressText}}</view>
+    </view>
+
+    <view class="overview__numbers">
+      <view class="overview__metric">
+        <text class="overview__label">已喝水量</text>
+        <text class="overview__value">{{todayAmount}} ml</text>
+      </view>
+      <view class="overview__metric">
+        <text class="overview__label">剩余水量</text>
+        <text class="overview__value">{{remainingAmount}} ml</text>
+      </view>
+      <view class="overview__metric" wx:if="{{exceedAmount > 0}}">
+        <text class="overview__label">超额完成</text>
+        <text class="overview__value">{{exceedAmount}} ml</text>
+      </view>
+    </view>
+
+    <view class="bar-track overview__bar">
+      <view class="bar-fill" style="width: {{progressPercent}}%;"></view>
+    </view>
+  </view>
+
+  <view class="action-grid">
+    <view class="card action-card">
+      <view class="panel-head">
+        <text class="section-title">快捷记一杯</text>
+        <text class="section-subtitle">常用水杯规格一键录入</text>
+      </view>
+
+      <view class="cup-list">
+        <view
+          class="cup-chip"
+          wx:for="{{quickCups}}"
+          wx:key="*this"
+          data-amount="{{item}}"
+          bindtap="addQuickCup"
+        >
+          {{item}} ml
+        </view>
+      </view>
+
+      <view class="field-block">
+        <text class="field-label">手动输入水量</text>
+        <input
+          class="text-input"
+          type="number"
+          placeholder="例如：420"
+          value="{{manualAmountInput}}"
+          bindinput="handleManualAmountInput"
+        />
+      </view>
+
+      <view class="primary-btn action-card__btn" bindtap="addManualWater">记录本次喝水</view>
+    </view>
+
+    <view class="card action-card">
+      <view class="panel-head">
+        <text class="section-title">提醒与目标</text>
+        <text class="section-subtitle">提醒间隔填 0 可关闭弹窗提醒</text>
+      </view>
+
+      <view class="field-block">
+        <text class="field-label">每日饮水目标（ml）</text>
+        <input class="text-input" type="number" value="{{targetInput}}" bindinput="handleTargetInput" />
+      </view>
+
+      <view class="field-block">
+        <text class="field-label">提醒间隔（分钟）</text>
+        <input class="text-input" type="number" value="{{intervalInput}}" bindinput="handleIntervalInput" />
+      </view>
+
+      <view class="time-row">
+        <view class="time-field">
+          <text class="field-label">免打扰开始</text>
+          <picker mode="time" value="{{quietStart}}" bindchange="handleQuietStartChange">
+            <view class="picker-field">{{quietStart}}</view>
+          </picker>
+        </view>
+        <view class="time-field">
+          <text class="field-label">免打扰结束</text>
+          <picker mode="time" value="{{quietEnd}}" bindchange="handleQuietEndChange">
+            <view class="picker-field">{{quietEnd}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="secondary-btn action-card__btn" bindtap="saveSettings">保存喝水设置</view>
+    </view>
+  </view>
+
+  <view class="records card">
+    <view class="panel-head">
+      <text class="section-title">今日饮水记录</text>
+      <text class="section-subtitle">每一条记录都会实时刷新剩余水量和进度条</text>
+    </view>
+
+    <view class="list-row water-row" wx:for="{{todayRecords}}" wx:key="id">
+      <view class="list-meta">
+        <text class="list-title">{{item.amount}} ml</text>
+        <text class="list-desc">{{item.source}} · {{item.clockText}}</text>
+      </view>
+      <view class="mini-actions">
+        <view class="mini-btn mini-btn--danger" data-id="{{item.id}}" bindtap="deleteWaterRecord">删除</view>
+      </view>
+    </view>
+
+    <view wx:if="{{!todayRecords.length}}" class="empty-state">
+      今天还没有喝水记录，先记下第一杯吧。
+    </view>
+  </view>
+
+  <view class="history card">
+    <view class="panel-head">
+      <text class="section-title">近 7 天饮水历史</text>
+      <text class="section-subtitle">方便观察备考期间的喝水习惯变化</text>
+    </view>
+
+    <view class="history-item" wx:for="{{historyDays}}" wx:key="date">
+      <view class="list-row">
+        <view class="list-meta">
+          <text class="list-title">{{item.date}}</text>
+          <text class="list-desc">{{item.amount}} ml · 完成度 {{item.percentText}}</text>
+        </view>
+      </view>
+      <view class="bar-track">
+        <view class="bar-fill" style="width: {{item.barWidth}}%;"></view>
+      </view>
+    </view>
+  </view>
+</view>
